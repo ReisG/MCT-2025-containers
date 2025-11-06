@@ -4,11 +4,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi import Request
 
-from sqlmodel import Field, Session, SQLModel, create_engine
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
-import config
+from config import *
 
-db_url = "mysql://{DBUSER}:{DBPASSWORD}@{DBADDR}:{DBPORT}"
+db_url = f"mysql://{DBUSER}:{DBPASSWORD}@{DBADDR}:{DBPORT}"
 engine = None
 
 class Ping(SQLModel, table=True):
@@ -26,15 +26,15 @@ def on_startup():
 @app.get("/ping")
 def ping_pong(request : Request):
     ip = request.client.host
-    session = Session(engine)
-
-    ping = Ping(ip=ip)
-    session.add(ping)
-    session.commit()
-
-    session.close()
+    with Session(engine) as session:
+        ping = Ping(ip=ip)
+        session.add(ping)
+        session.commit()
     return "pong"
 
 @app.get('/visits')
 def print_visits():
-    return 2
+    res = None
+    with Session(engine) as session:
+        res = session.exec(select(Ping).count()).one()
+    return res
