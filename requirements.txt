@@ -1,3 +1,4 @@
-fastapi[standart]
+fastapi[standard]
 sqlmodel
 mysql-connector-python
+mysql-client
