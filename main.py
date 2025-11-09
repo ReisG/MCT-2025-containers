@@ -6,12 +6,14 @@ from fastapi import Request
 
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
+from sqlalchemy import func
+
 from config import *
 
-db_url = f"mysql://{DBUSER}:{DBPASSWORD}@{DBADDR}:{DBPORT}"
+db_url = f"mysql://{DBUSER}:{DBPASSWORD}@{DBADDR}:{DBPORT}/{DATABASE}"
 engine = None
 
-class Ping(SQLModel, table=True):
+class Pings(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     ip: str
 
@@ -27,7 +29,7 @@ def on_startup():
 def ping_pong(request : Request):
     ip = request.client.host
     with Session(engine) as session:
-        ping = Ping(ip=ip)
+        ping = Pings(ip=ip)
         session.add(ping)
         session.commit()
     return "pong"
@@ -36,5 +38,5 @@ def ping_pong(request : Request):
 def print_visits():
     res = None
     with Session(engine) as session:
-        res = session.exec(select(Ping).count()).one()
+        res = session.exec(select(func.count(Pings.id))).one()
     return res
