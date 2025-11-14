@@ -37,7 +37,7 @@ def ping_pong(request : Request):
         ping = Pings(ip=ip)
         session.add(ping)
         session.commit()
-    return "pong"
+    return PlainTextResponse(content="pong")
 
 @app.get('/visits')
 def print_visits():
